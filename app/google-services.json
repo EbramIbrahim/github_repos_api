@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "911163340775",
+    "project_id": "githubrepos-70e4c",
+    "storage_bucket": "githubrepos-70e4c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911163340775:android:27725dc353dbf5a1efef42",
+        "android_client_info": {
+          "package_name": "com.example.githubrepos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911163340775-mgj2hd2971974fbbrusm4f0a8e54d6as.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.githubrepos",
+            "certificate_hash": "8369a20e99a241408910ba4f0c57caf6a09773b0"
+          }
+        },
+        {
+          "client_id": "911163340775-t0onqk7v1g03j4nh1i3k9ldl22ijnj11.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmQLtFcKG1w0aAYOztnYxWUI2kupnFvjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911163340775-t0onqk7v1g03j4nh1i3k9ldl22ijnj11.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
