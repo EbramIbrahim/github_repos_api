@@ -1,5 +1,8 @@
 package com.example.githubrepos.features.register.signup.presentation.ui
 
+import android.app.Activity
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +28,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,18 +47,20 @@ import com.example.githubrepos.R
 import com.example.githubrepos.common.presentation.navigation.Screen
 import com.example.githubrepos.common.presentation.ui.AuthBorderBox
 import com.example.githubrepos.common.presentation.ui.CustomTextField
-import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupActions
-import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupEvent
-import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupState
+import com.example.githubrepos.common.utils.Constant
+import com.example.githubrepos.features.register.signup.presentation.viewmodel.RegisterViewModel
+import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupContract
+import com.facebook.CallbackManager
+import com.facebook.login.LoginManager
 
 @Composable
 fun SignupScreen(
     modifier: Modifier = Modifier,
-    onAction: (SignupActions) -> Unit,
-    signupState: SignupState,
-    signupEvent: SignupEvent,
+    viewModel: RegisterViewModel,
     onGoogleAuthClick: () -> Unit,
-    onFacebookAuthClick: () -> Unit,
+    callbackManager: CallbackManager,
+    loginManager: LoginManager,
+    context: Context,
     navController: NavController,
 ) {
 
@@ -58,16 +68,36 @@ fun SignupScreen(
     val passwordState = rememberTextFieldState()
     val nameState = rememberTextFieldState()
 
-    LaunchedEffect(key1 = signupEvent) {
-        when (signupEvent) {
-            is SignupEvent.SignupSuccessfully -> {
-                navController.navigate(Screen.ReposListScreen) {
-                    popUpTo(Screen.SignupScreen) { inclusive = true }
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    val activity = LocalContext.current as Activity
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.singleEvent.collect { event ->
+            when (event) {
+                is SignupContract.SignupEvent.SignupSuccessfully -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                    navController.navigate(Screen.ReposListScreen) {
+                        popUpTo(Screen.SignupScreen) { inclusive = true }
+                    }
                 }
             }
-
-            SignupEvent.Idle -> Unit
         }
+
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.viewState.collect { state ->
+            isLoading = state.isLoading
+
+            if (state.exception != null) {
+                Toast.makeText(context, state.exception.message, Toast.LENGTH_LONG).show()
+
+            }
+        }
+
     }
 
     Column(
@@ -76,14 +106,18 @@ fun SignupScreen(
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.SpaceAround
     ) {
-        if (signupState.isLoading) {
-            Box(contentAlignment = Alignment.Center) {
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         }
 
-
         Column {
+
             Image(
                 painter = painterResource(id = R.drawable.register),
                 contentDescription = "Register Screen",
@@ -110,7 +144,18 @@ fun SignupScreen(
             )
 
             AuthBorderBox(
-                onBoxClick = { onFacebookAuthClick() },
+                onBoxClick = {
+                    loginManager.logInWithReadPermissions(
+                        activity,
+                        Constant.facebook_permissions
+                    )
+                    viewModel.processIntent(
+                        SignupContract.SignupActions.LoginWithFacebook(
+                            callbackManager,
+                            loginManager
+                        )
+                    )
+                },
                 image = R.drawable.facebook
             )
 
@@ -153,8 +198,8 @@ fun SignupScreen(
 
         Button(
             onClick = {
-                onAction(
-                    SignupActions.Signup(
+                viewModel.processIntent(
+                    SignupContract.SignupActions.Signup(
                         emailState.text.toString(),
                         passwordState.text.toString(),
                         nameState.text.toString()

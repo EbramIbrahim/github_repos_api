@@ -2,39 +2,32 @@ package com.example.githubrepos.common.presentation.navigation
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.githubrepos.features.register.login.presentation.ui.LoginScreen
-import com.example.githubrepos.features.register.login.presentation.viewmodel.LoginEvent
-import com.example.githubrepos.features.register.login.presentation.viewmodel.LoginViewModel
+import com.example.githubrepos.features.register.login.presentation.viewmodel.LoginViewModel2
 import com.example.githubrepos.features.register.signup.presentation.ui.SignupScreen
-import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupEvent
-import com.example.githubrepos.features.register.signup.presentation.viewmodel.SignupViewModel
+import com.example.githubrepos.features.register.signup.presentation.viewmodel.RegisterViewModel
 import com.example.githubrepos.features.repos_list.presentation.ui.ReposScreen
+import com.facebook.CallbackManager
+import com.facebook.login.LoginManager
 
 
 @Composable
 fun SetUpNavigation(
     modifier: Modifier = Modifier,
-    loginViewModel: LoginViewModel,
-    signupViewModel: SignupViewModel,
-    onGoogleAuthClick:() -> Unit,
-    onFacebookAuthClick:() -> Unit,
+    loginViewModel: LoginViewModel2,
+    signupViewModel: RegisterViewModel,
+    onGoogleAuthClick: () -> Unit,
+    onFacebookAuthClick: () -> Unit,
     navController: NavHostController,
+    callbackManager: CallbackManager,
+    loginManager: LoginManager,
     context: Context
 ) {
 
-
-    val loginState by loginViewModel.loginState.collectAsStateWithLifecycle()
-    val signupState by signupViewModel.signupState.collectAsStateWithLifecycle()
-
-    val signUpEvent by signupViewModel.singleEvent.collectAsState(initial = SignupEvent.Idle)
-    val loginEvent by loginViewModel.singleEvent.collectAsState(initial = LoginEvent.Idle)
 
     NavHost(
         modifier = modifier,
@@ -44,23 +37,23 @@ fun SetUpNavigation(
 
         composable<Screen.LoginScreen> {
             LoginScreen(
-                onAction =  loginViewModel::onAction,
-                loginState = loginState,
                 onGoogleAuthClick = { onGoogleAuthClick() },
                 onFacebookAuthClick = { onFacebookAuthClick() },
                 navController = navController,
-                loginEvent = loginEvent
+                context = context,
+                viewModel = loginViewModel,
+                loginManager = loginManager,
             )
         }
 
         composable<Screen.SignupScreen> {
             SignupScreen(
-                onAction = signupViewModel::onAction,
-                signupState = signupState ,
                 onGoogleAuthClick = { onGoogleAuthClick() },
-                onFacebookAuthClick = { onFacebookAuthClick() },
                 navController = navController,
-                signupEvent = signUpEvent
+                viewModel = signupViewModel,
+                callbackManager = callbackManager,
+                loginManager = loginManager,
+                context = context
             )
         }
 
